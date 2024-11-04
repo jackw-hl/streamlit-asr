@@ -1,0 +1,6 @@
+streamlit==1.36.0
+openpyxl==3.1.0
+torch==2.5.1
+transformers==4.46.1
+pydub==0.25.1
+accelerate==1.1.0

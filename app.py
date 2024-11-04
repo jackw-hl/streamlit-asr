@@ -1,8 +1,9 @@
-import streamlit as st
 import torch
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+import streamlit as st
+
 from pydub import AudioSegment
 from tqdm import tqdm
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 st.title("Cantonese ASR")
 
@@ -28,11 +29,10 @@ if uploaded_file is not None:
         torch_dtype=torch_dtype,
         device=device
     )
-    pipe.model.config.forced_decoder_ids = pipe.tokenizer.get_decoder_prompt_ids(language=lang, task="transcribe")
-    video_file = "test.mp4"
-    audio_file = "test.wav"
-    audio = AudioSegment.from_file(video_file, format="mp4")
-    audio.export(audio_file, format="wav")
+    video_file = uploaded_file.name
+    #audio_file = "test.wav"
+    audio = AudioSegment.from_file(uploaded_file, format="mp4")
+    #audio.export(audio_file, format="wav")
     # Process audio in chunks
     chunk_length_ms = 30000  # 30 seconds
     chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
@@ -42,27 +42,20 @@ if uploaded_file is not None:
     total_chunks = len(chunks)
 
     for i, chunk in enumerate(tqdm(chunks, desc="Processing audio")):
-        chunk.export("temp_chunk.wav", format="wav")
-        sample = "temp_chunk.wav"
-        result = pipe(sample)
-        transcription += result["text"] + " "
+        result = pipe(chunk.export(format="wav").read())
+        transcription += result['text'] + " "
         progress_bar.progress((i + 1) / total_chunks)
 
-    output_file = "transcription.txt"
-    with open(output_file, "w", encoding="utf-8") as f:
-        f.write(transcription)
-    st.success(f"Transcription saved to {output_file}")
+
 
     st.title("Transcription Result")
     with st.expander("Response"):
-        st.info(transcription.strip())
+        st.info(transcription)
 
     # Create a download button for the output file
-    with open(output_file, "rb") as f:
-        st.download_button(
+    st.download_button(
             label="Download Transcription",
-            data=f,
-            file_name=output_file,
+            file_name=f"{uploaded_file.name}_transcription.txt",
             mime="text/plain"
-        )
+    )
     uploaded_file = None

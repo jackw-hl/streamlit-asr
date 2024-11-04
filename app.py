@@ -65,3 +65,4 @@ if uploaded_file is not None:
             file_name=output_file,
             mime="text/plain"
         )
+    uploaded_file = None

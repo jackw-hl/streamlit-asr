@@ -7,6 +7,9 @@ from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 st.title("Cantonese ASR")
 
+if 'processed' not in st.session_state:
+    st.session_state.processed = False
+
 # File uploader with drag-and-drop functionality
 uploaded_file = st.file_uploader("Upload your video file", type=["mp4"], key="file_uploader")
 
@@ -58,4 +61,4 @@ if uploaded_file is not None:
         mime="text/plain",
         data=transcription.encode('utf-8')
     )
-    uploaded_file = None
+    st.session_state.processed = True

@@ -53,8 +53,9 @@ if uploaded_file is not None:
 
     # Create a download button for the output file
     st.download_button(
-            label="Download Transcription",
-            file_name=f"{uploaded_file.name}_transcription.txt",
-            mime="text/plain"
+        label="Download Transcription",
+        file_name=f"{uploaded_file.name}_transcription.txt",
+        mime="text/plain",
+        data=transcription.encode('utf-8')
     )
     uploaded_file = None

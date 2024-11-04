@@ -7,17 +7,17 @@ from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 st.title("Cantonese ASR")
 
+# Initialize session state for tracking processing status
 if 'processed' not in st.session_state:
     st.session_state.processed = False
 
 # File uploader with drag-and-drop functionality
 uploaded_file = st.file_uploader("Upload your video file", type=["mp4"], key="file_uploader")
 
-if uploaded_file is not None:
+if uploaded_file is not None and not st.session_state.processed:
     lang = "zh"
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
-    # model_id = "openai/whisper-large-v3-turbo"
     model_id = "alvanlii/whisper-small-cantonese"
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
@@ -32,10 +32,12 @@ if uploaded_file is not None:
         torch_dtype=torch_dtype,
         device=device
     )
-    video_file = uploaded_file.name
+
+    # Read the uploaded file as bytes
     audio_bytes = uploaded_file.read()
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
 
+    # Process audio in chunks
     chunk_length_ms = 30000  # 30 seconds
     chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
 
@@ -45,10 +47,8 @@ if uploaded_file is not None:
 
     for i, chunk in enumerate(tqdm(chunks, desc="Processing audio")):
         result = pipe(chunk.export(format="wav").read())
-        transcription += result['text'] + "\n"
+        transcription += result['text'] + " "
         progress_bar.progress((i + 1) / total_chunks)
-
-
 
     st.title("Transcription Result")
     with st.expander("Response"):
@@ -61,4 +61,6 @@ if uploaded_file is not None:
         mime="text/plain",
         data=transcription.encode('utf-8')
     )
+
+    # Mark the file as processed
     st.session_state.processed = True

@@ -1,6 +1,6 @@
 import torch
 import streamlit as st
-
+import io
 from pydub import AudioSegment
 from tqdm import tqdm
 from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline

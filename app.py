@@ -30,10 +30,9 @@ if uploaded_file is not None:
         device=device
     )
     video_file = uploaded_file.name
-    #audio_file = "test.wav"
-    audio = AudioSegment.from_file(uploaded_file, format="mp4")
-    #audio.export(audio_file, format="wav")
-    # Process audio in chunks
+    audio_bytes = uploaded_file.read()
+    audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
+
     chunk_length_ms = 30000  # 30 seconds
     chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
 
@@ -43,7 +42,7 @@ if uploaded_file is not None:
 
     for i, chunk in enumerate(tqdm(chunks, desc="Processing audio")):
         result = pipe(chunk.export(format="wav").read())
-        transcription += result['text'] + " "
+        transcription += result['text'] + "\n"
         progress_bar.progress((i + 1) / total_chunks)
 
 

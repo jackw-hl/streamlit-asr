@@ -16,9 +16,6 @@ if 'processed' not in st.session_state:
 # File uploader with drag-and-drop functionality
 uploaded_file = st.file_uploader("Upload your video file", type=["mp4"], key="file_uploader")
 
-# Reset the processed flag if a new file is uploaded
-if uploaded_file is not None:
-    st.session_state.processed = False
 
 if uploaded_file is not None and not st.session_state.processed:
     lang = "zh"
@@ -43,10 +40,14 @@ if uploaded_file is not None and not st.session_state.processed:
     # Read the uploaded file as bytes
     audio_bytes = uploaded_file.read()
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
+    # Convert audio to numpy array
+    audio = audio.set_frame_rate(16000).set_channels(1)
+    audio_array = np.array(audio.get_array_of_samples())
+
     # Show a spinner while processing the audio
     with st.spinner('Processing...'):
         # Process the entire audio file
-        result = pipe( audio.export(format="wav").read())
+        result = pipe( audio_array, sampling_rate=16000)
         transcription = result['text']
 
     st.title("Result")

@@ -2,8 +2,9 @@ import torch
 import streamlit as st
 import io
 import os
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline, GenerationConfig
+import subprocess
 from pydub import AudioSegment
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline, GenerationConfig
 
 st.title("Cantonese ASR Transcription")
 
@@ -46,23 +47,44 @@ if uploaded_file is not None and not st.session_state.processed:
     audio_bytes = uploaded_file.read()
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
 
+    # Compress audio
+    compressed_audio_io = io.BytesIO()
+    audio.export(compressed_audio_io, format='wav', bitrate='64k')
+    compressed_audio_io.seek(0)
+
+    # Compress video using ffmpeg
+    compressed_video_path = "compressed_video.mp4"
+    with open("input_video.mp4", "wb") as f:
+        f.write(audio_bytes)
+    subprocess.run(["ffmpeg", "-i", "input_video.mp4", "-vcodec", "libx264", "-crf", "28", compressed_video_path])
+
     with st.spinner('Processing...'):
-        transcription = pipe(audio.export(format="wav").read())['text']
+        # Process entire audio file
+        result = pipe(compressed_audio_io.read())
+        transcription = result["text"]
 
     st.success('Done!')
     st.title("Result")
     with st.expander("Transcription"):
         st.info(transcription)
 
-    # Create download button
+    # Create download button for transcription
     filename_without_extension = os.path.splitext(uploaded_file.name)[0]
     output_file_name = f"{filename_without_extension}_transcription.txt"
-
     st.download_button(
         label="Download Transcription",
         file_name=output_file_name,
         mime="text/plain",
         data=transcription.encode('utf-8')
     )
-    uploaded_file = None
+
+    # Create download button for compressed video
+    with open(compressed_video_path, "rb") as f:
+        st.download_button(
+            label="Download Compressed Video",
+            file_name=compressed_video_path,
+            mime="video/mp4",
+            data=f.read()
+        )
+
     st.session_state.processed = True

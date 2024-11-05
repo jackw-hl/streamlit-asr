@@ -50,7 +50,7 @@ if uploaded_file is not None and not st.session_state.processed:
         wav_io.seek(0)
         
         # Process entire audio file
-        result = pipe(wav_io)
+        result = pipe(wav_io.read())
         transcription = result["text"]
 
     st.title("Result")

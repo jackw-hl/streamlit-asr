@@ -35,7 +35,8 @@ if uploaded_file is not None and not st.session_state.processed:
         tokenizer=processor.tokenizer,
         feature_extractor=processor.feature_extractor,
         torch_dtype=torch_dtype,
-        device=device
+        device=device,
+        return_timestamps=True
     )
     pipe.model.config.forced_decoder_ids = pipe.tokenizer.get_decoder_prompt_ids(language=lang, task="transcribe")
     # Show a spinner while processing the audio

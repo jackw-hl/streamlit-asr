@@ -47,16 +47,17 @@ if uploaded_file is not None and not st.session_state.processed:
     audio_bytes = uploaded_file.read()
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
 
+    uploaded_file = None;  # Clear the uploaded file to free up memory
     # Compress audio
     compressed_audio_io = io.BytesIO()
-    audio.export(compressed_audio_io, format='wav', bitrate='64k')
+    audio.export(compressed_audio_io, format='mp3', bitrate='64k')
     compressed_audio_io.seek(0)
 
     # Compress video using ffmpeg
-    compressed_video_path = "compressed_video.mp4"
-    with open("input_video.mp4", "wb") as f:
-        f.write(audio_bytes)
-    subprocess.run(["ffmpeg", "-i", "input_video.mp4", "-vcodec", "libx264", "-crf", "28", compressed_video_path])
+    # compressed_video_path = "compressed_video.mp4"
+    # with open("input_video.mp4", "wb") as f:
+    #     f.write(audio_bytes)
+    # subprocess.run(["ffmpeg", "-i", "input_video.mp4", "-vcodec", "libx264", "-crf", "28", compressed_video_path])
 
     with st.spinner('Processing...'):
         # Process entire audio file

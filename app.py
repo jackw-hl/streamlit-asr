@@ -45,7 +45,7 @@ if uploaded_file is not None and not st.session_state.processed:
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
 
     # Process audio in chunks
-    chunk_length_ms = 30 * 1000  # 30 seconds
+    chunk_length_ms = 1000  # 1 seconds
     chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
 
     transcription = ""

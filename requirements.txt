@@ -4,3 +4,4 @@ torch==2.5.1
 transformers==4.46.1
 pydub==0.25.1
 accelerate==1.1.0
+numpy==2.1.3

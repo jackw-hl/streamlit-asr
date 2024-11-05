@@ -40,21 +40,18 @@ if uploaded_file is not None and not st.session_state.processed:
     pipe.model.config.forced_decoder_ids = pipe.tokenizer.get_decoder_prompt_ids(language=lang, task="transcribe")
     # Show a spinner while processing the audio
     with st.spinner('Processing...'):
-        # Read the uploaded file as bytes
+        # Read and process audio
         audio_bytes = uploaded_file.read()
         audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
-
-        # Convert audio to numpy array
-        audio = audio.set_frame_rate(16000).set_channels(1)
-        audio_array = np.array(audio.get_array_of_samples())
-
-        # Preprocess the audio data with the correct sampling rate
-        inputs = processor(audio_array, sampling_rate=16000, return_tensors="pt")
-        # Process the entire audio file
-        inputs = {key: value.to(device) for key, value in inputs.items()}
-        with torch.no_grad():
-            result = pipe.model.generate(**inputs)
-        transcription = processor.batch_decode(result, skip_special_tokens=True)[0]
+        
+        # Export to WAV format in memory
+        wav_io = io.BytesIO()
+        audio.export(wav_io, format='wav')
+        wav_io.seek(0)
+        
+        # Process entire audio file
+        result = pipe(wav_io)
+        transcription = result["text"]
 
     st.title("Result")
     with st.expander("Transcription"):

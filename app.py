@@ -39,7 +39,7 @@ if uploaded_file is not None and not st.session_state.processed:
         torch_dtype=torch_dtype,
         device=device
     )
-
+    pipe.model.config.forced_decoder_ids = pipe.tokenizer.get_decoder_prompt_ids(language=lang, task="transcribe")
     # Read the uploaded file as bytes
     audio_bytes = uploaded_file.read()
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
@@ -52,7 +52,7 @@ if uploaded_file is not None and not st.session_state.processed:
     progress_bar = st.progress(0)
     progress_text = st.empty()
     total_chunks = len(chunks)
-
+    progress_text.text(f"Progress: {0}%")
     for i, chunk in enumerate(tqdm(chunks, desc="Processing audio")):
         result = pipe(chunk.export(format="wav").read())
         transcription += result['text'] + " "

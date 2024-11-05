@@ -43,12 +43,18 @@ if uploaded_file is not None and not st.session_state.processed:
         # Read the uploaded file as bytes
         audio_bytes = uploaded_file.read()
         audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
+
         # Convert audio to numpy array
         audio = audio.set_frame_rate(16000).set_channels(1)
         audio_array = np.array(audio.get_array_of_samples())
+
+        # Preprocess the audio data with the correct sampling rate
+        inputs = processor(audio_array, sampling_rate=16000, return_tensors="pt")
         # Process the entire audio file
-        result = pipe( audio_array.tolist(), sampling_rate=16000)
-        transcription = result['text']
+        inputs = {key: value.to(device) for key, value in inputs.items()}
+        with torch.no_grad():
+            result = pipe.model.generate(**inputs)
+        transcription = processor.batch_decode(result, skip_special_tokens=True)[0]
 
     st.title("Result")
     with st.expander("Transcription"):

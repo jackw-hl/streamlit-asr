@@ -38,7 +38,7 @@ if uploaded_file is not None and not st.session_state.processed:
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
 
     # Process audio in chunks
-    chunk_length_ms = 30000  # 30 seconds
+    chunk_length_ms = 10 * 1000  # 10 seconds
     chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
 
     transcription = ""
@@ -50,14 +50,14 @@ if uploaded_file is not None and not st.session_state.processed:
         transcription += result['text'] + " "
         progress_bar.progress((i + 1) / total_chunks)
 
-    st.title("Transcription Result")
-    with st.expander("Response"):
+    st.title("Result")
+    with st.expander("Transcription"):
         st.info(transcription)
 
     # Create a download button for the output file
     st.download_button(
         label="Download Transcription",
-        file_name=f"{uploaded_file.name}_transcription.txt",
+        file_name=f"{os.path.splitext(uploaded_file.name)[0]}_transcription.txt",
         mime="text/plain",
         data=transcription.encode('utf-8')
     )

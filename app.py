@@ -1,10 +1,11 @@
 import torch
 import streamlit as st
 import io
+import os
+
 from pydub import AudioSegment
 from tqdm import tqdm
-from transformers import AutoModelForSeq2SeqLM, AutoProcessor, pipeline
-import os
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
 
 st.title("Cantonese ASR Transcription")
 
@@ -24,7 +25,7 @@ if uploaded_file is not None and not st.session_state.processed:
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
     model_id = "alvanlii/whisper-small-cantonese"
-    model = AutoModelForSeq2SeqLM.from_pretrained(
+    model = AutoModelForSpeechSeq2Seq.from_pretrained(
         model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
     )
     model.to(device)

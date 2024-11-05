@@ -43,22 +43,11 @@ if uploaded_file is not None and not st.session_state.processed:
     # Read the uploaded file as bytes
     audio_bytes = uploaded_file.read()
     audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
-
-    # Process audio in chunks
-    chunk_length_ms = 1000  # 1 seconds
-    chunks = [audio[i:i + chunk_length_ms] for i in range(0, len(audio), chunk_length_ms)]
-
-    transcription = ""
-    progress_bar = st.progress(0)
-    progress_text = st.empty()
-    total_chunks = len(chunks)
-    progress_text.text(f"Progress: {0}%")
-    for i, chunk in enumerate(tqdm(chunks, desc="Processing audio")):
-        result = pipe(chunk.export(format="wav").read())
-        transcription += result['text'] + " "
-        progress = (i + 1) / total_chunks
-        progress_bar.progress(progress)
-        progress_text.text(f"Progress: {int(progress * 100)}%")
+    # Show a spinner while processing the audio
+    with st.spinner('Processing...'):
+        # Process the entire audio file
+        result = pipe( audio.export(format="wav").read())
+        transcription = result['text']
 
     st.title("Result")
     with st.expander("Transcription"):

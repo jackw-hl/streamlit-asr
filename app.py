@@ -6,7 +6,7 @@ import numpy as np
 
 from pydub import AudioSegment
 from tqdm import tqdm
-from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline, GenerationConfig
 
 st.title("Cantonese ASR Transcription")
 
@@ -29,6 +29,9 @@ if uploaded_file is not None and not st.session_state.processed:
     model.to(device)
 
     processor = AutoProcessor.from_pretrained(model_id)
+    generation_config = GenerationConfig.from_pretrained(model_id)
+    generation_config.no_timestamps_token_id = processor.tokenizer.convert_tokens_to_ids("<|notimestamps|>")
+
     pipe = pipeline(
         "automatic-speech-recognition",
         model=model,
@@ -36,7 +39,8 @@ if uploaded_file is not None and not st.session_state.processed:
         feature_extractor=processor.feature_extractor,
         torch_dtype=torch_dtype,
         device=device,
-        return_timestamps=True
+        return_timestamps=True,
+        generation_config=generation_config
     )
     pipe.model.config.forced_decoder_ids = pipe.tokenizer.get_decoder_prompt_ids(language=lang, task="transcribe")
     # Show a spinner while processing the audio

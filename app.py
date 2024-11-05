@@ -12,6 +12,9 @@ if 'processed' not in st.session_state:
 
 uploaded_file = st.file_uploader("Upload your video file", type=["mp4"], key="file_uploader")
 
+if uploaded_file is not None:
+    st.session_state.processed = False
+
 if uploaded_file is not None and not st.session_state.processed:
     lang = "zh"
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -61,5 +64,5 @@ if uploaded_file is not None and not st.session_state.processed:
         mime="text/plain",
         data=transcription.encode('utf-8')
     )
-
+    uploaded_file = None
     st.session_state.processed = True

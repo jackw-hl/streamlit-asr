@@ -19,7 +19,7 @@ if uploaded_file is not None:
     # "openai/whisper-large-v3-turbo"
     # "openai/whisper-large-v3"
     # model_id = "alvanlii/whisper-small-cantonese"
-    model_id = "openai/whisper-large-v3"
+    model_id = "alvanlii/whisper-small-cantonese"
     model = AutoModelForSpeechSeq2Seq.from_pretrained(
         model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
     )

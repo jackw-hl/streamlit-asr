@@ -43,22 +43,19 @@ if uploaded_file is not None:
     )
     pipe.model.config.forced_decoder_ids = pipe.tokenizer.get_decoder_prompt_ids(language=lang, task="transcribe")
 
-
-
-
     # Process audio
     audio_bytes = uploaded_file.read()
-    audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
-    # Compress audio
-    compressed_audio_io = io.BytesIO()
-    audio.export(compressed_audio_io, format='mp3', bitrate='64k')
-    compressed_audio_io.seek(0)
-
-    audio = None
-    audio_bytes = None
 
     file_name = uploaded_file.name
     uploaded_file = None;  # Clear the uploaded file to free up memory
+
+    audio = AudioSegment.from_file(io.BytesIO(audio_bytes), format="mp4")
+    audio_bytes = None
+    # Compress audio
+    compressed_audio_io = io.BytesIO()
+    audio.export(compressed_audio_io, format='mp3', bitrate='64k')
+    audio = None
+    compressed_audio_io.seek(0)
 
     with st.spinner('Processing...'):
         transcription = pipe(compressed_audio_io.read())['text']
